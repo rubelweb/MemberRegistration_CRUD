@@ -3,35 +3,62 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using Member_Registration.Data.Interfaces;
+using Member_Registration.Data.Model;
 using Member_Registration.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Member_Registration.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IMemberRepository _memberRepository;
+        public HomeController(IMemberRepository MemberRepository)
+        {
+            _memberRepository = MemberRepository;
+        }
+
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult About()
+        [HttpGet]
+        public JsonResult GetAllMembers()
         {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
+            return Json(_memberRepository.GetAll());
+        }
+        [HttpPost]
+        public JsonResult AddMember(Member member)
+        {
+            try
+            {
+                _memberRepository.Create(member);
+                return Json("Records added Successfully.");
+            }
+            catch
+            {
+                return Json("Records not added,");
+            }
+        }
+        public JsonResult GetMemberbyID(int ID)
+        {
+            var member = _memberRepository.GetById(ID);
+            return Json(member);
         }
 
-        public IActionResult Contact()
+        [HttpPost]
+        public JsonResult UpdateMember(Member member)
         {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            _memberRepository.Update(member);
+            return Json("Record updated successfully.");
         }
 
-        public IActionResult Error()
+        [HttpPost]
+        public JsonResult DeleteMember(int ID)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            _memberRepository.Delete(ID);
+            return Json("Record deleted successfully.");
         }
     }
 }
